@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#f6f2ec">
+<title>Seating plan</title>
+<style>
+:root{--bg:#f6f2ec;--ink:#2a2521;--mut:#7a7068;--line:#d9cfc3;--acc:#b0503a;--accbg:#f6e6df;--bad:#c23b2e;--ok:#3d7a52;--card:#fff}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.35 -apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Hiragino Sans GB","Noto Sans CJK SC","Microsoft YaHei",sans-serif;-webkit-tap-highlight-color:transparent}
+main{max-width:480px;margin:0 auto;padding:12px 8px calc(28px + env(safe-area-inset-bottom))}
+button,input,select{font:inherit;color:inherit}
+input,select{font-size:16px}
+button{cursor:pointer}
+#title{width:100%;border:0;border-bottom:1.5px solid var(--line);background:transparent;font-size:22px;font-weight:650;padding:4px 0;border-radius:0;outline:none}
+#title:focus{border-color:var(--acc)}
+#vtitle{display:none;margin:4px 0 0;font-size:24px;font-weight:650;text-align:center}
+.vsub{display:none;text-align:center;color:var(--mut);margin:2px 0 4px}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px 0 8px}
+.seg button{border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:8px 2px;font-size:14px;line-height:1.15;min-height:52px}
+.seg button[aria-pressed=true]{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+.maybes{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0}
+.maybes:empty{display:none}
+.pill{border:1.5px solid var(--line);background:var(--card);border-radius:24px;padding:8px 14px;font-size:15px;min-height:44px}
+.pill.in{background:#e4f1e8;border-color:#9cc8aa}
+.pill.out{background:#eee;color:var(--mut);text-decoration:line-through}
+#status{font-size:15px;margin:6px 0 2px}
+#status .bad{color:var(--bad);font-weight:600}
+#status .good{color:var(--ok)}
+#status .warn{color:var(--bad);font-weight:600}
+#hint{font-size:14px;color:var(--mut);margin:0 0 4px;min-height:1.35em}
+#stage{position:relative;width:100%;margin:6px 0;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+#stage .none{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--mut);text-align:center;padding:20px}
+.tbl{position:absolute;background:#ebe1d3;border:1.5px solid #d3c5b2;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#a39683;letter-spacing:.05em}
+.tbl.rd{border-radius:50%}
+.tbl.vert{writing-mode:vertical-rl}
+.seat{position:absolute;display:flex;align-items:center;justify-content:center;padding:0 4px;border:1.5px solid var(--line);background:var(--card);border-radius:9px;text-align:center;font-weight:600}
+.seat .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.seat.empty{border-style:dashed;background:transparent;color:var(--mut);font-weight:400}
+.armed .seat.empty{border-color:var(--acc);background:var(--accbg)}
+.seat.sel,.chip.sel{background:var(--acc);border-color:var(--acc);color:#fff}
+.seat.apart,.chip.apart{border-color:var(--bad)}
+.b{position:absolute;top:-7px;right:-6px;width:17px;height:17px;border-radius:50%;background:var(--bad);color:#fff;font:700 11px/17px -apple-system,sans-serif;text-align:center;font-style:normal;pointer-events:none}
+.chip{position:relative}
+#trayWrap{margin:10px 0}
+#trayWrap h2,summary{font-size:14px;font-weight:600;margin:0}
+#tray{display:flex;flex-wrap:wrap;gap:8px;min-height:50px;margin-top:6px;padding:8px;border:1.5px dashed var(--line);border-radius:12px}
+#tray.armed{border-color:var(--acc);background:var(--accbg)}
+#tray .note{color:var(--mut);font-size:14px;align-self:center}
+.chip{border:1.5px solid var(--line);background:var(--card);border-radius:9px;padding:8px 14px;min-height:46px;font-size:16px;font-weight:550}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.btn{border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:10px 8px;min-height:48px;font-size:16px;font-weight:550}
+.btn.primary{background:var(--acc);border-color:var(--acc);color:#fff}
+details{background:var(--card);border:1.5px solid var(--line);border-radius:12px;margin:10px 0;padding:0 12px}
+summary{padding:12px 0;cursor:pointer;list-style:none;display:flex;justify-content:space-between}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--mut);font-size:18px;line-height:1}
+details[open] summary::after{content:"–"}
+details>div{padding:0 0 12px}
+.row{display:flex;gap:8px;align-items:center}
+.row input[type=text]{flex:1;min-width:0}
+input[type=text],select{border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;background:#fff;min-height:46px}
+ul.plans{list-style:none;margin:10px 0 0;padding:0}
+ul.plans li{display:flex;gap:6px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+ul.plans .pn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:550}
+.sm{border:1.5px solid var(--line);background:var(--card);border-radius:8px;padding:6px 10px;font-size:14px;min-height:44px}
+.sm.danger{background:var(--bad);border-color:var(--bad);color:#fff}
+.empty-note{color:var(--mut);font-size:13px;margin:8px 0 0}
+.guest{border-top:1px solid var(--line);padding:10px 0}
+.guest:first-child{border-top:0}
+.guest .opts{display:flex;gap:10px;align-items:center;margin-top:6px;font-size:14px;color:var(--mut)}
+.guest select{flex:1;min-width:0;min-height:44px;padding:5px 8px;font-size:16px}
+.guest label.mb{display:flex;gap:6px;align-items:center;white-space:nowrap;min-height:44px}
+.guest input[type=checkbox]{width:26px;height:26px}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#2a2521;color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;max-width:90vw}
+#toast.on{opacity:1}
+#sheet{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:flex-end;justify-content:center;z-index:30}
+#sheet.on{display:flex}
+#sheet>div{background:#fff;width:100%;max-width:480px;border-radius:16px 16px 0 0;padding:14px;max-height:80vh;display:flex;flex-direction:column;gap:8px}
+#sheet textarea{width:100%;height:40vh;font:14px/1.4 ui-monospace,Menlo,"PingFang SC",monospace;border:1.5px solid var(--line);border-radius:9px;padding:8px}
+/* clean read-only view */
+body.view .edit{display:none!important}
+body.view #vtitle,body.view .vsub{display:block}
+body.view .seat{pointer-events:none;border-color:#cdbfae}
+body.view .seat.empty{border-color:var(--line);background:transparent}
+body.view .b{display:none}
+body.view .seat.sel{background:var(--card);color:var(--ink)}
+body.view main{padding-top:20px}
+body.view #stage{margin:14px 0}
+body.view #vNotSeated{display:block}
+#vNotSeated{display:none;text-align:center;color:var(--mut);font-size:14px;margin-bottom:10px}
+.vacts{display:none}
+body.view .vacts{display:grid}
+</style>
+</head>
+<body>
+<main>
+  <h1 id="vtitle"></h1>
+  <div class="vsub" id="vsub"></div>
+  <input id="title" class="edit" type="text" maxlength="60" aria-label="Plan name" placeholder="Plan name" autocomplete="off">
+
+  <div class="seg edit" id="layouts" role="group" aria-label="Table shape"></div>
+  <div class="maybes edit" id="maybes"></div>
+  <div id="status" class="edit"></div>
+  <p id="hint" class="edit"></p>
+
+  <div id="stage"></div>
+  <div id="vNotSeated"></div>
+
+  <div id="trayWrap" class="edit">
+    <h2>Not seated <span id="trayN"></span></h2>
+    <div id="tray"></div>
+  </div>
+
+  <div class="acts edit">
+    <button class="btn primary" id="bSave">Save plan</button>
+    <button class="btn" id="bShare">Copy share link</button>
+    <button class="btn" id="bText">Copy as text</button>
+    <button class="btn" id="bView">Clean view</button>
+  </div>
+  <div class="acts vacts">
+    <button class="btn" id="bText2">Copy as text</button>
+    <button class="btn primary" id="bEdit">Back to editing</button>
+  </div>
+
+  <details class="edit" id="dPlans"><summary id="sPlans">Saved plans</summary>
+    <div><div class="empty-note" id="plansEmpty">Nothing saved yet. “Save plan” stores this plan under its name above.</div><ul class="plans" id="plans"></ul></div>
+  </details>
+  <details class="edit" id="dGuests"><summary id="sGuests">Guests</summary>
+    <div>
+      <div id="guests"></div>
+      <div class="row" style="margin-top:10px"><input type="text" id="newName" maxlength="40" placeholder="Add a guest" autocomplete="off"><button class="btn" id="bAdd">Add</button></div>
+    </div>
+  </details>
+</main>
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="sheet"><div><div id="sheetMsg">Press and hold to select, then copy:</div><textarea id="sheetText" readonly></textarea><button class="btn" id="sheetClose">Close</button></div></div>
+
+<script>
+(()=>{
+'use strict';
+const MAX=14;
+const LAYOUTS={l:'Long table',e:'Long table + ends',t:'Two tables',r:'Round table'};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fine=matchMedia('(hover:hover) and (pointer:fine)').matches;
+
+let S=blank(), selId=null, armedRm=null, view=false;
+let seq=0, fragSeq=-1, curFrag='', renaming=null, armedDel=null;
+
+function blank(){return {t:'Seating plan',L:'l',g:[],s:[],nid:0}}
+const byId=id=>S.g.find(x=>x.id===id);
+const isOn=g=>!(g.f&2);
+const act=()=>S.g.filter(isOn);
+const partnerOf=g=>g.c?S.g.find(x=>x!==g&&x.c===g.c):null;
+const nm=g=>g.n.trim()||'(unnamed)';
+
+/* ---------- state <-> compact object ---------- */
+function serialize(){
+  return {v:1,t:S.t,L:S.L,g:S.g.map(x=>[x.n,x.c,x.f]),s:S.s.map(id=>id<0?-1:S.g.findIndex(x=>x.id===id))};
+}
+function sanitize(o){
+  if(!o||typeof o!=='object'||!Array.isArray(o.g)) throw new Error('bad plan');
+  const st=blank();
+  st.t=String(o.t||'').slice(0,60)||'Seating plan';
+  st.L=LAYOUTS[o.L]?o.L:'l';
+  o.g.slice(0,40).forEach(r=>{
+    r=Array.isArray(r)?r:['',0,0];
+    st.g.push({id:st.nid++,n:String(r[0]==null?'':r[0]).slice(0,40),c:Math.max(0,Math.floor(+r[1]))||0,f:(+r[2]|0)&3});
+  });
+  const cnt={}; st.g.forEach(x=>{if(x.c)cnt[x.c]=(cnt[x.c]||0)+1});
+  st.g.forEach(x=>{if(x.c&&cnt[x.c]!==2)x.c=0});
+  const n=st.g.filter(isOn).length, used=new Set();
+  st.s=Array(n).fill(-1);
+  (Array.isArray(o.s)?o.s:[]).forEach((gi,i)=>{
+    if(i<n&&Number.isInteger(gi)&&st.g[gi]&&isOn(st.g[gi])&&!used.has(gi)){st.s[i]=gi;used.add(gi)}
+  });
+  return st;
+}
+
+/* ---------- link encoding: JSON -> (deflate-raw) -> base64url ---------- */
+function b64u(u8){let s='';for(let i=0;i<u8.length;i++)s+=String.fromCharCode(u8[i]);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
+function unb64u(t){t=t.replace(/-/g,'+').replace(/_/g,'/');while(t.length%4)t+='=';const s=atob(t),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u}
+async function pipe(u8,Ctor){return new Uint8Array(await new Response(new Blob([u8]).stream().pipeThrough(new Ctor('deflate-raw'))).arrayBuffer())}
+async function enc(o){
+  const raw=new TextEncoder().encode(JSON.stringify(o));
+  if(window.CompressionStream){try{const z=await pipe(raw,CompressionStream);if(z.length<raw.length)return 'z'+b64u(z)}catch(e){}}
+  return 'j'+b64u(raw);
+}
+async function dec(f){
+  let u=unb64u(f.slice(1));
+  if(f[0]==='z')u=await pipe(u,DecompressionStream);
+  else if(f[0]!=='j')throw new Error('unknown format');
+  return JSON.parse(new TextDecoder().decode(u));
+}
+
+/* ---------- table geometry (design space 400 wide) ---------- */
+function build(L,N){
+  const seats=[],tables=[];let H=400;
+  const mk=o=>{o.adj=[];o.acr=[];seats.push(o)};
+  const lk=(a,b,k)=>{if(a>=0&&b>=0&&a<N&&b<N&&a!==b&&!seats[a][k].includes(b)){seats[a][k].push(b);seats[b][k].push(a)}};
+  if(L==='l'||L==='e'){
+    const ends=L==='e',off=ends?Math.min(2,N):0,rest=N-off,rows=Math.max(Math.ceil(rest/2),1),y0=ends?60:8;
+    const gi=(side,row)=>off+row*2+side;
+    if(off>=1)mk({x:135,y:8,w:130,h:46,kind:'head'});
+    if(off>=2)mk({x:135,y:y0+rows*52+6,w:130,h:46,kind:'foot'});
+    for(let g=off;g<N;g++){const r=g-off,side=r%2,row=r>>1;mk({x:side?260:10,y:y0+row*52+3,w:130,h:46,kind:'s',side,row})}
+    tables.push({x:150,y:y0,w:100,h:rows*52});
+    for(let g=off;g<N;g++){const s=seats[g];lk(g,gi(s.side,s.row+1),'adj');lk(g,gi(1-s.side,s.row),'acr')}
+    if(off>=1){lk(0,gi(0,0),'adj');lk(0,gi(1,0),'adj')}
+    if(off>=2){
+      if(rest>0)lk(1,gi(0,Math.ceil(rest/2)-1),'adj');
+      if(rest>1)lk(1,gi(1,Math.floor(rest/2)-1),'adj');
+      lk(0,1,'acr');
+    }
+    H=off>=2?seats[1].y+54:y0+rows*52+8;
+  }else if(L==='t'){
+    const NT=[Math.ceil(N/2),Math.floor(N/2)],gi=(t,side,row)=>(row*2+side)*2+t;
+    for(let g=0;g<N;g++){const t=g%2,l=g>>1,side=l%2,row=l>>1;mk({x:(t?202:0)+(side?118:8),y:8+row*52+3,w:72,h:46,kind:'s',tbl:t,side,row})}
+    for(let g=0;g<N;g++){const s=seats[g];lk(g,gi(s.tbl,s.side,s.row+1),'adj');lk(g,gi(s.tbl,1-s.side,s.row),'acr')}
+    const rows=NT.map(n=>Math.max(Math.ceil(n/2),1));
+    [0,1].forEach(t=>tables.push({x:(t?202:0)+84,y:8,w:30,h:rows[t]*52,label:'Table '+(t+1),vert:true}));
+    H=8+Math.max(...rows)*52+8;
+  }else{
+    const R=155;
+    for(let g=0;g<N;g++){const a=-Math.PI/2+g*2*Math.PI/N;mk({x:200+R*Math.cos(a)-33,y:200+R*Math.sin(a)-23,w:66,h:46,kind:'r',pos:g})}
+    const d=N>>1;
+    for(let g=0;g<N;g++){lk(g,(g+1)%N,'adj');if(d>1){lk(g,(g+d)%N,'acr');lk(g,(g-d+N)%N,'acr')}}
+    tables.push({x:105,y:105,w:190,h:190,round:true});
+  }
+  return {seats,tables,H,close:(a,b)=>seats[a].adj.includes(b)||seats[a].acr.includes(b)};
+}
+
+/* ---------- seats follow the guest count ---------- */
+function fit(){
+  const ids=new Set(act().map(g=>g.id));
+  S.s=S.s.map(id=>ids.has(id)?id:-1);
+  while(S.s.length>ids.size){
+    let k=S.s.length-1;
+    for(let i=S.s.length-1;i>=0;i--)if(S.s[i]<0){k=i;break}
+    const last=S.s.pop();
+    if(k<S.s.length)S.s[k]=last;
+  }
+  const grown=[];
+  while(S.s.length<ids.size){S.s.push(-1);grown.push(S.s.length-1)}
+  const un=act().filter(g=>!S.s.includes(g.id));
+  grown.forEach(i=>{if(un.length)S.s[i]=un.shift().id});
+}
+
+function apart(G){
+  const set=new Set(),pairs=[],seen=new Set(),A=act();
+  A.forEach(a=>{
+    if(!a.c||seen.has(a.c))return;
+    const b=A.find(x=>x!==a&&x.c===a.c);if(!b)return;
+    seen.add(a.c);
+    const ia=S.s.indexOf(a.id),ib=S.s.indexOf(b.id);
+    if(!(ia>=0&&ib>=0&&G.close(ia,ib))){set.add(a.id);set.add(b.id);pairs.push([a,b])}
+  });
+  return {set,pairs};
+}
+
+/* ---------- actions ---------- */
+function swap(a,b){
+  const pa=S.s.indexOf(a),pb=S.s.indexOf(b);
+  if(pa<0&&pb<0){selId=b;return}
+  if(pa>=0){S.s[pa]=b;if(pb>=0)S.s[pb]=a}else S.s[pb]=a;
+}
+function tapGuest(id){
+  if(selId===null){selId=id;draw();return}
+  if(selId===id){selId=null;draw();return}
+  const a=selId;
+  swap(a,id);
+  if(selId===a)selId=null;
+  change();
+}
+function tapSeat(i){
+  const gid=S.s[i];
+  if(gid>=0)return tapGuest(gid);
+  if(selId===null)return;
+  const pa=S.s.indexOf(selId);
+  if(pa>=0)S.s[pa]=-1;
+  S.s[i]=selId;selId=null;change();
+}
+function tapTray(){
+  if(selId===null)return;
+  const pa=S.s.indexOf(selId);
+  if(pa>=0){S.s[pa]=-1;selId=null;change()}
+}
+
+/* ---------- rendering ---------- */
+function draw(structural){
+  document.body.classList.toggle('view',view);
+  const N=S.s.length,G=build(S.L,N),ap=apart(G),A=act();
+  // header / controls
+  if($('#title')!==document.activeElement)$('#title').value=S.t;
+  $('#vtitle').textContent=S.t;
+  $('#vsub').textContent=LAYOUTS[S.L]+' · '+N+' seat'+(N===1?'':'s');
+  $('#layouts').innerHTML=Object.keys(LAYOUTS).map(k=>`<button data-l="${k}" aria-pressed="${S.L===k}">${esc(LAYOUTS[k])}</button>`).join('');
+  $('#maybes').innerHTML=S.g.filter(g=>g.f&1).map(g=>`<button class="pill ${isOn(g)?'in':'out'}" data-maybe="${g.id}" aria-pressed="${isOn(g)}">${esc(nm(g))} (maybe): ${isOn(g)?'coming':'not coming'}</button>`).join('');
+  let st=`<b>${A.length}</b> guest${A.length===1?'':'s'} · <b>${N}</b> seat${N===1?'':'s'}`;
+  if(A.length>MAX)st+=` · <span class="warn">over the ${MAX}-guest limit</span>`;
+  st+='<br>';
+  st+=ap.pairs.length?`<span class="bad">${ap.pairs.length} couple${ap.pairs.length===1?'':'s'} apart</span>: ${ap.pairs.map(p=>esc(nm(p[0]))+' &amp; '+esc(nm(p[1]))).join(', ')}`:(A.some(a=>partnerOf(a)&&isOn(partnerOf(a)))?'<span class="good">All couples sit together ✓</span>':'No couples marked');
+  $('#status').innerHTML=st;
+  const sel=selId!==null?byId(selId):null;
+  $('#hint').textContent=sel?`${nm(sel)} selected. Tap a seat or another guest${S.s.includes(sel.id)?' (or the tray to unseat)':''}.`:(N?'Tap a guest, then tap a seat or another guest.':'');
+  // stage
+  const el=$('#stage'),k=(el.clientWidth||400)/400;
+  el.className=sel?'armed':'';
+  el.style.height=Math.round(G.H*k)+'px';
+  let h='';
+  G.tables.forEach(t=>{h+=`<div class="tbl${t.round?' rd':''}${t.vert?' vert':''}" style="left:${t.x*k}px;top:${t.y*k}px;width:${t.w*k}px;height:${t.h*k}px;font-size:${12*k}px">${esc(t.label||'')}</div>`});
+  G.seats.forEach((s,i)=>{
+    const g=S.s[i]>=0?byId(S.s[i]):null,bad=g&&ap.set.has(g.id);
+    const fs=(s.w>=100?16:s.w>=70?14:13)*k;
+    h+=`<button class="seat${g?'':' empty'}${g&&g.id===selId?' sel':''}${bad?' apart':''}" data-seat="${i}"${g&&fine&&!view?` draggable="true" data-gid="${g.id}"`:''} style="left:${s.x*k}px;top:${s.y*k}px;width:${s.w*k}px;height:${s.h*k}px;font-size:${fs}px"${g?` aria-label="${esc(nm(g))}${bad?' (apart from partner)':''}"`:' aria-label="Empty seat"'}>`+
+       `<span class="n">${g?esc(nm(g)):'—'}</span>${bad?'<i class="b">!</i>':''}</button>`;
+  });
+  if(!N)h+='<div class="none">No guests yet.<br>Open “Guests” below to add some.</div>';
+  el.innerHTML=h;
+  // tray
+  const tray=A.filter(g=>!S.s.includes(g.id));
+  $('#trayN').textContent=tray.length?`(${tray.length})`:'';
+  $('#tray').className=sel&&S.s.includes(sel.id)?'armed':'';
+  $('#tray').innerHTML=tray.length?tray.map(g=>`<button class="chip${g.id===selId?' sel':''}${ap.set.has(g.id)?' apart':''}" data-chip="${g.id}"${fine?` draggable="true" data-gid="${g.id}"`:''}>${esc(nm(g))}${ap.set.has(g.id)?'<i class="b">!</i>':''}</button>`).join(''):'<span class="note">Everyone is seated.</span>';
+  $('#vNotSeated').textContent=tray.length?'Not seated: '+tray.map(nm).join(', '):'';
+  $('#sGuests').firstChild.textContent=`Guests (${A.length}${A.length!==S.g.length?` of ${S.g.length}`:''})`;
+  renderPlans();
+  if(structural)renderGuests();
+}
+function plans(){try{const p=JSON.parse(localStorage.getItem('seat.plans'));return Array.isArray(p)?p:[]}catch(e){return []}}
+function savePlans(p){try{localStorage.setItem('seat.plans',JSON.stringify(p))}catch(e){toast('Could not save: storage is full or blocked')}}
+function renderPlans(){
+  const p=plans();
+  $('#sPlans').firstChild.textContent=`Saved plans${p.length?` (${p.length})`:''}`;
+  $('#plansEmpty').style.display=p.length?'none':'';
+  $('#plans').innerHTML=p.map(x=>{
+    const name=renaming===x.id?`<input type="text" class="rn" maxlength="60" value="${esc(x.name)}" data-rn="${x.id}" style="flex:1;min-width:0">`:`<span class="pn">${esc(x.name)}</span>`;
+    const btns=renaming===x.id?`<button class="sm" data-pl="ok" data-id="${x.id}">OK</button>`:
+      `<button class="sm" data-pl="load" data-id="${x.id}">Load</button><button class="sm" data-pl="ren" data-id="${x.id}">Rename</button><button class="sm${armedDel===x.id?' danger':''}" data-pl="del" data-id="${x.id}">${armedDel===x.id?'Delete?':'Delete'}</button>`;
+    return `<li>${name}${btns}</li>`;
+  }).join('');
+}
+function renderGuests(){
+  $('#guests').innerHTML=S.g.length?S.g.map(g=>{
+    const p=partnerOf(g);
+    return `<div class="guest" data-g="${g.id}"><div class="row"><input type="text" class="gn" maxlength="40" value="${esc(g.n)}" aria-label="Name">`+
+      `<button class="sm${armedRm===g.id?' danger':''}" data-rm="${g.id}" aria-label="Remove ${esc(nm(g))}">${armedRm===g.id?'Remove?':'Remove'}</button></div>`+
+      `<div class="opts"><label style="flex:1;display:flex;gap:6px;align-items:center;min-width:0">Partner <select class="gp"><option value="">none</option>${S.g.filter(x=>x!==g).map(x=>`<option value="${x.id}" data-nm="${x.id}"${p&&p.id===x.id?' selected':''}>${esc(nm(x))}</option>`).join('')}</select></label>`+
+      `<label class="mb"><input type="checkbox" class="gm"${g.f&1?' checked':''}> maybe</label></div></div>`;
+  }).join(''):'<div class="empty-note">No guests yet.</div>';
+}
+
+/* ---------- persistence ---------- */
+function change(structural){
+  draw(structural);persist();
+}
+function persist(){
+  const o=serialize();
+  try{localStorage.setItem('seat.cur',JSON.stringify(o))}catch(e){}
+  const my=++seq;
+  enc(o).then(f=>{if(my===seq){curFrag=f;fragSeq=my;history.replaceState(null,'','#'+f)}}).catch(()=>{});
+}
+function setState(st){S=st;selId=null;armedRm=null;renaming=null;armedDel=null}
+
+/* ---------- clipboard / toast ---------- */
+let tt;
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2000)}
+function showSheet(text,msg){$('#sheetMsg').textContent=msg||'Press and hold to select, then copy:';$('#sheetText').value=text;$('#sheet').classList.add('on');$('#sheetText').focus();$('#sheetText').select()}
+async function copy(text,msg){
+  try{await navigator.clipboard.writeText(text);toast(msg);return}catch(e){}
+  const ta=document.createElement('textarea');
+  ta.value=text;ta.setAttribute('readonly','');ta.style.cssText='position:fixed;top:0;left:0;opacity:0';
+  document.body.appendChild(ta);ta.focus();ta.select();ta.setSelectionRange(0,text.length);
+  let ok=false;try{ok=document.execCommand('copy')}catch(e){}
+  ta.remove();
+  if(ok)toast(msg);else showSheet(text);
+}
+function planText(){
+  const N=S.s.length,G=build(S.L,N);
+  const who=i=>S.s[i]>=0?nm(byId(S.s[i])):'(empty)';
+  const list=(pred)=>G.seats.map((s,i)=>[s,i]).filter(([s])=>pred(s)).sort((a,b)=>a[0].row-b[0].row).map(([s,i])=>`  ${s.row+1}. ${who(i)}`);
+  const out=[S.t||'Seating plan',LAYOUTS[S.L]+' · '+N+' seats',''];
+  if(S.L==='l'||S.L==='e'){
+    if(S.L==='e'&&N>=1)out.push('Head end (top of chart): '+who(0),'');
+    out.push('Left side, top to bottom:',...list(s=>s.kind==='s'&&s.side===0),'','Right side, top to bottom:',...list(s=>s.kind==='s'&&s.side===1));
+    if(S.L==='e'&&N>=2)out.push('','Foot end (bottom of chart): '+who(1));
+    out.push('','Seats with the same number face each other.');
+  }else if(S.L==='t'){
+    [0,1].forEach(t=>out.push(`Table ${t+1}`,' Left side, top to bottom:',...list(s=>s.tbl===t&&s.side===0).map(x=>' '+x),' Right side, top to bottom:',...list(s=>s.tbl===t&&s.side===1).map(x=>' '+x),''));
+    out.push('Seats with the same number on one table face each other.');
+  }else{
+    out.push('Seats clockwise, starting at the top:',...G.seats.map((s,i)=>`  ${i+1}. ${who(i)}`));
+  }
+  const tray=act().filter(g=>!S.s.includes(g.id));
+  if(tray.length)out.push('','Not seated: '+tray.map(nm).join(', '));
+  return out.join('\n');
+}
+async function shareLink(){
+  const f=fragSeq===seq?curFrag:await enc(serialize());
+  return location.href.split('#')[0]+'#'+f;
+}
+
+/* ---------- events ---------- */
+$('#layouts').addEventListener('click',e=>{const b=e.target.closest('[data-l]');if(b){S.L=b.dataset.l;change()}});
+$('#maybes').addEventListener('click',e=>{
+  const b=e.target.closest('[data-maybe]');if(!b)return;
+  const g=byId(+b.dataset.maybe);g.f^=2;selId=null;fit();change(true);
+});
+$('#stage').addEventListener('click',e=>{const b=e.target.closest('[data-seat]');if(b&&!view)tapSeat(+b.dataset.seat)});
+$('#tray').addEventListener('click',e=>{const b=e.target.closest('[data-chip]');if(b)tapGuest(+b.dataset.chip);else tapTray()});
+$('#title').addEventListener('input',e=>{S.t=e.target.value;$('#vtitle').textContent=S.t||'Seating plan';persist()});
+$('#bView').addEventListener('click',()=>{view=true;selId=null;draw();scrollTo(0,0)});
+$('#bEdit').addEventListener('click',()=>{view=false;draw()});
+const doText=()=>copy(planText(),'Copied seat list');
+$('#bText').addEventListener('click',doText);$('#bText2').addEventListener('click',doText);
+$('#bShare').addEventListener('click',async()=>{
+  const u=await shareLink();
+  try{await navigator.clipboard.writeText(u);toast('Link copied');return}catch(e){}
+  copy(u,'Link copied');
+});
+$('#sheetClose').addEventListener('click',()=>$('#sheet').classList.remove('on'));
+$('#bSave').addEventListener('click',()=>{
+  const name=(S.t||'').trim()||'Seating plan',p=plans(),o=serialize();
+  const i=p.findIndex(x=>x.name.toLowerCase()===name.toLowerCase());
+  if(i>=0){p[i].st=o;p[i].name=name}else p.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name,st:o});
+  savePlans(p);renderPlans();toast(i>=0?`Updated “${name}”`:`Saved “${name}”`);
+});
+$('#plans').addEventListener('click',e=>{
+  const b=e.target.closest('[data-pl]');if(!b)return;
+  const p=plans(),x=p.find(q=>q.id===b.dataset.id),a=b.dataset.pl;
+  if(!x)return;
+  if(a==='load'){try{const st=sanitize(x.st);st.t=x.name;setState(st);change(true);toast(`Loaded “${x.name}”`)}catch(err){toast('That saved plan is unreadable')}return}
+  if(a==='ren'){renaming=x.id;armedDel=null;renderPlans();const i=$('.rn');if(i){i.focus();i.select()}return}
+  if(a==='ok'){const i=$('.rn');const v=i&&i.value.trim();if(v){x.name=v;savePlans(p)}renaming=null;renderPlans();return}
+  if(a==='del'){
+    if(armedDel===x.id){savePlans(p.filter(q=>q.id!==x.id));armedDel=null}else armedDel=x.id;
+    renderPlans();
+  }
+});
+$('#plans').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList.contains('rn')){const b=$('[data-pl=ok]');if(b)b.click()}});
+document.addEventListener('click',e=>{
+  if(armedDel&&!e.target.closest('#plans')){armedDel=null;renderPlans()}
+  if(armedRm!==null&&!e.target.closest('[data-rm]')){armedRm=null;renderGuests()}
+});
+// guest editor
+function addGuest(){
+  const i=$('#newName'),n=i.value.trim();if(!n)return;
+  S.g.push({id:S.nid++,n,c:0,f:0});i.value='';fit();change(true);i.focus();
+}
+$('#bAdd').addEventListener('click',addGuest);
+$('#newName').addEventListener('keydown',e=>{if(e.key==='Enter')addGuest()});
+$('#guests').addEventListener('input',e=>{
+  if(!e.target.classList.contains('gn'))return;
+  const g=byId(+e.target.closest('[data-g]').dataset.g);g.n=e.target.value;
+  document.querySelectorAll(`#guests option[data-nm="${g.id}"]`).forEach(o=>o.textContent=nm(g));
+  draw();persist();
+});
+$('#guests').addEventListener('change',e=>{
+  const row=e.target.closest('[data-g]');if(!row)return;
+  const g=byId(+row.dataset.g);
+  if(e.target.classList.contains('gm')){
+    if(e.target.checked)g.f|=1;else{g.f&=~1;if(!isOn(g)){g.f&=~2;fit()}}
+    change(true);
+  }else if(e.target.classList.contains('gp')){
+    const old=partnerOf(g);if(old)old.c=0;
+    const b=e.target.value===''?null:byId(+e.target.value);
+    if(b){const ob=partnerOf(b);if(ob)ob.c=0;g.c=b.c=Math.max(0,...S.g.map(x=>x.c))+1}else g.c=0;
+    change(true);
+  }
+});
+$('#guests').addEventListener('click',e=>{
+  const b=e.target.closest('[data-rm]');if(!b)return;
+  e.stopPropagation();
+  const id=+b.dataset.rm;
+  if(armedRm!==id){armedRm=id;renderGuests();return}
+  const p=partnerOf(byId(id));if(p)p.c=0;
+  S.g=S.g.filter(x=>x.id!==id);armedRm=null;if(selId===id)selId=null;fit();change(true);
+});
+// drag and drop (mouse devices only; touch uses tap)
+let dragId=null;
+document.addEventListener('dragstart',e=>{
+  const el=e.target.closest&&e.target.closest('[data-gid]');if(!el)return;
+  dragId=+el.dataset.gid;e.dataTransfer.setData('text/plain',String(dragId));e.dataTransfer.effectAllowed='move';
+});
+document.addEventListener('dragover',e=>{if(dragId!==null&&e.target.closest('.seat,.chip,#tray'))e.preventDefault()});
+document.addEventListener('drop',e=>{
+  if(dragId===null)return;e.preventDefault();
+  selId=dragId;dragId=null;
+  const s=e.target.closest('.seat'),c=e.target.closest('.chip');
+  if(s)tapSeat(+s.dataset.seat);else if(c)tapGuest(+c.dataset.chip);else tapTray();
+});
+document.addEventListener('dragend',()=>{dragId=null});
+let rz;addEventListener('resize',()=>{cancelAnimationFrame(rz);rz=requestAnimationFrame(()=>draw())});
+addEventListener('hashchange',()=>load(false));
+
+/* ---------- start ---------- */
+async function load(first){
+  let st=null;const h=location.hash.slice(1);
+  if(h){try{st=sanitize(await dec(h))}catch(e){toast('Could not read that link')}}
+  if(!st&&first){try{st=sanitize(JSON.parse(localStorage.getItem('seat.cur')))}catch(e){}}
+  if(!st){if(!first)return;st=blank()}
+  setState(st);draw(true);persist();
+  if(!st.g.length)$('#dGuests').open=true;
+}
+load(true);
+})();
+</script>
+</body>
+</html>
