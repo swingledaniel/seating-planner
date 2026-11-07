@@ -2,183 +2,121 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="robots" content="noindex">
 <meta name="referrer" content="no-referrer">
-<meta name="theme-color" content="#f6f2ec">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#ffffff">
 <title>Seating plan</title>
 <style>
-:root{--bg:#f6f2ec;--ink:#2a2521;--mut:#7a7068;--line:#d9cfc3;--acc:#b0503a;--accbg:#f6e6df;--bad:#c23b2e;--ok:#3d7a52;--card:#fff}
+:root{color-scheme:light;--surface:#fff;--panel:#F1F2F6;--chip:#EDEFF4;--line:#E0E2E9;--text:#15151C;--sec:#5B5C67;--muted:#8A8B95;--acc:#4F46B7;--accsoft:#E9E8F7;--danger:#A32D2D;--success:#1D6B4F}
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.35 -apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Hiragino Sans GB","Noto Sans CJK SC","Microsoft YaHei",sans-serif;-webkit-tap-highlight-color:transparent}
-main{max-width:480px;margin:0 auto;padding:12px 8px calc(28px + env(safe-area-inset-bottom))}
-button,input,select{font:inherit;color:inherit}
-input,select{font-size:16px}
-button{cursor:pointer}
-#title{width:100%;border:0;border-bottom:1.5px solid var(--line);background:transparent;font-size:22px;font-weight:650;padding:4px 0;border-radius:0;outline:none}
-#title:focus{border-color:var(--acc)}
-#vtitle{display:none;margin:4px 0 0;font-size:24px;font-weight:650;text-align:center}
-.vsub{display:none;text-align:center;color:var(--mut);margin:2px 0 4px}
-.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px 0 8px}
-.seg button{border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:8px 2px;font-size:14px;line-height:1.15;min-height:52px}
-.seg button[aria-pressed=true]{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
-.maybes{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0}
-.maybes:empty{display:none}
-.pill{border:1.5px solid var(--line);background:var(--card);border-radius:24px;padding:8px 14px;font-size:15px;min-height:44px}
-.pill.in{background:#e4f1e8;border-color:#9cc8aa}
-.pill.out{background:#eee;color:var(--mut);text-decoration:line-through}
-#status{font-size:15px;margin:6px 0 2px}
-#status .bad{color:var(--bad);font-weight:600}
-#status .good{color:var(--ok)}
-#status .warn{color:var(--bad);font-weight:600}
-#hint{font-size:14px;color:var(--mut);margin:0 0 4px;min-height:1.35em}
-#stage{position:relative;width:100%;margin:6px 0;user-select:none;-webkit-user-select:none;touch-action:manipulation}
-#stage .none{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--mut);text-align:center;padding:20px}
-.tbl{position:absolute;background:#ebe1d3;border:1.5px solid #d3c5b2;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#a39683;letter-spacing:.05em}
-.tbl.rd{border-radius:50%}
-.tbl.vert{writing-mode:vertical-rl}
-.seat{position:absolute;display:flex;align-items:center;justify-content:center;padding:0 4px;border:1.5px solid var(--line);background:var(--card);border-radius:9px;text-align:center;font-weight:600}
-.seat .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
-.seat.empty{border-style:dashed;background:transparent;color:var(--mut);font-weight:400}
-.armed .seat.empty{border-color:var(--acc);background:var(--accbg)}
-.seat.sel,.chip.sel{background:var(--acc);border-color:var(--acc);color:#fff}
-.seat.apart,.chip.apart{border-color:var(--bad)}
-.b{position:absolute;top:-7px;right:-6px;width:17px;height:17px;border-radius:50%;background:var(--bad);color:#fff;font:700 11px/17px -apple-system,sans-serif;text-align:center;font-style:normal;pointer-events:none}
-.chip{position:relative}
-#trayWrap{margin:10px 0}
-#trayWrap h2,summary{font-size:14px;font-weight:600;margin:0}
-#tray{display:flex;flex-wrap:wrap;gap:8px;min-height:50px;margin-top:6px;padding:8px;border:1.5px dashed var(--line);border-radius:12px}
-#tray.armed{border-color:var(--acc);background:var(--accbg)}
-#tray .note{color:var(--mut);font-size:14px;align-self:center}
-.chip{border:1.5px solid var(--line);background:var(--card);border-radius:9px;padding:8px 14px;min-height:46px;font-size:16px;font-weight:550}
-.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
-.btn{border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:10px 8px;min-height:48px;font-size:16px;font-weight:550}
-.btn.primary{background:var(--acc);border-color:var(--acc);color:#fff}
-details{background:var(--card);border:1.5px solid var(--line);border-radius:12px;margin:10px 0;padding:0 12px}
-summary{padding:12px 0;cursor:pointer;list-style:none;display:flex;justify-content:space-between}
-summary::-webkit-details-marker{display:none}
-summary::after{content:"+";color:var(--mut);font-size:18px;line-height:1}
-details[open] summary::after{content:"–"}
-details>div{padding:0 0 12px}
-.row{display:flex;gap:8px;align-items:center}
-.row input[type=text]{flex:1;min-width:0}
-input[type=text],select{border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;background:#fff;min-height:46px}
-ul.plans{list-style:none;margin:10px 0 0;padding:0}
-ul.plans li{display:flex;gap:6px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
-ul.plans .pn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:550}
-.sm{border:1.5px solid var(--line);background:var(--card);border-radius:8px;padding:6px 10px;font-size:14px;min-height:44px}
-.sm.danger{background:var(--bad);border-color:var(--bad);color:#fff}
-.empty-note{color:var(--mut);font-size:13px;margin:8px 0 0}
-.guest{border-top:1px solid var(--line);padding:10px 0}
-.guest:first-child{border-top:0}
-.guest .opts{display:flex;gap:10px;align-items:center;margin-top:6px;font-size:14px;color:var(--mut)}
-.guest select{flex:1;min-width:0;min-height:44px;padding:5px 8px;font-size:16px}
-.guest label.mb{display:flex;gap:6px;align-items:center;white-space:nowrap;min-height:44px}
-.guest input[type=checkbox]{width:26px;height:26px}
-#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#2a2521;color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;max-width:90vw}
-#toast.on{opacity:1}
-#sheet{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:flex-end;justify-content:center;z-index:30}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:var(--surface);color:var(--text);-webkit-text-size-adjust:100%}
+body{position:fixed;inset:0;font:16px/1.3 -apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Hiragino Sans GB","Noto Sans CJK SC","Microsoft YaHei",sans-serif;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;-webkit-appearance:none;appearance:none}
+#app{position:absolute;inset:0;display:flex;flex-direction:column;max-width:520px;margin:0 auto;padding:env(safe-area-inset-top) 8px calc(8px + env(safe-area-inset-bottom))}
+header{flex:none;display:flex;align-items:center;gap:8px;height:52px;padding:0 2px 0 8px}
+#title{flex:1;min-width:0;font-size:18px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ib{position:relative;width:48px;height:48px;border:0;border-radius:24px;background:var(--chip);color:var(--acc);display:flex;align-items:center;justify-content:center}
+.ib svg{width:24px;height:24px}
+.ib .cnt{position:absolute;top:2px;right:0;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--acc);color:#fff;font:700 11px/18px -apple-system,sans-serif;text-align:center}
+.ib .cnt:empty{display:none}
+.pillb{flex:none;height:44px;padding:0 14px 0 10px;border:0;border-radius:22px;background:var(--chip);color:var(--acc);display:flex;align-items:center;gap:6px;font-size:15px;font-weight:650}
+.pillb svg{width:22px;height:22px}
+.pillb[aria-pressed=true]{background:var(--acc);color:#fff}
+#stage{position:relative;flex:1 1 0;min-height:0;touch-action:none}
+.tbl{position:absolute;background:var(--panel);border:1.5px solid var(--line);border-radius:16px}
+.slot{position:absolute;left:0;top:0;border:1.5px dashed var(--line);border-radius:12px;display:none}
+.slot.empty{display:block}
+.slot.gap{display:block;border-color:var(--acc);background:var(--accsoft)}
+.card{position:relative;display:flex;align-items:center;justify-content:center;padding:0 12px 0 26px;background:var(--surface);border:1.5px solid var(--line);border-radius:12px;box-shadow:0 1px 2px rgba(21,21,28,.07);font-size:17px;font-weight:600;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;cursor:grab}
+.card .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;pointer-events:none}
+.card .grip{position:absolute;left:9px;top:50%;width:12px;height:18px;margin-top:-9px;background:radial-gradient(circle at 2px 2px,#B3B5C0 1.5px,transparent 2px) 0 0/6px 6px;pointer-events:none}
+.card .b{display:none;position:absolute;top:-7px;right:-6px;width:19px;height:19px;border-radius:50%;background:var(--danger);color:#fff;font:700 12px/19px -apple-system,sans-serif;text-align:center;font-style:normal;pointer-events:none}
+.card.apart .b{display:block}
+.card.apart{border-color:var(--danger)}
+#stage .card{position:absolute;left:0;top:0}
+#stage.live .card{transition:transform .2s cubic-bezier(.2,.8,.2,1),opacity .15s}
+#stage .card.gone{opacity:0;pointer-events:none}
+#stage .card.src,#tray .card.src{visibility:hidden}
+.card.ghost{position:fixed;left:0;top:0;z-index:50;pointer-events:none;border-color:var(--acc);box-shadow:0 14px 28px rgba(79,70,183,.35),0 2px 6px rgba(21,21,28,.2);cursor:grabbing;will-change:transform}
+.card.ghost.fly{transition:transform .13s ease-out,width .13s,height .13s,opacity .1s}
+#trayWrap{flex:none;margin-top:6px}
+#tray{display:flex;flex-wrap:wrap;align-items:center;gap:8px;min-height:84px;padding:10px;border:2px dashed #C9CAD6;border-radius:18px;background:var(--surface);transition:background .15s,border-color .15s}
+#tray .ti{flex:none;width:34px;height:34px;color:#B3B5C0}
+#tray.empty{justify-content:center}
+#tray.empty .ti{width:44px;height:44px}
+#tray.over{background:var(--accsoft);border-color:var(--acc)}
+#tray.over .ti{color:var(--acc)}
+#tray .card.chip{height:46px;min-width:96px;padding:0 14px 0 26px;font-size:16px}
+#sheet{position:fixed;inset:0;z-index:30;background:rgba(21,21,28,.35);display:none;align-items:flex-end;justify-content:center}
 #sheet.on{display:flex}
-#sheet>div{background:#fff;width:100%;max-width:480px;border-radius:16px 16px 0 0;padding:14px;max-height:80vh;display:flex;flex-direction:column;gap:8px}
-#sheet textarea{width:100%;height:40vh;font:14px/1.4 ui-monospace,Menlo,"PingFang SC",monospace;border:1.5px solid var(--line);border-radius:9px;padding:8px}
-/* clean read-only view */
-body.view .edit{display:none!important}
-body.view #vtitle,body.view .vsub{display:block}
-body.view .seat{pointer-events:none;border-color:#cdbfae}
-body.view .seat.empty{border-color:var(--line);background:transparent}
-body.view .b{display:none}
-body.view .seat.sel{background:var(--card);color:var(--ink)}
-body.view main{padding-top:20px}
-body.view #stage{margin:14px 0}
-body.view #vNotSeated{display:block}
-#vNotSeated{display:none;text-align:center;color:var(--mut);font-size:14px;margin-bottom:10px}
-.vacts{display:none}
-body.view .vacts{display:grid}
+#sheet .panel{width:100%;max-width:520px;background:var(--surface);border-radius:20px 20px 0 0;padding:14px 12px calc(14px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;max-height:78%}
+.srow{display:flex;gap:8px;align-items:center}
+.srow input{flex:1;min-width:0;height:48px;border:1.5px solid var(--line);border-radius:12px;padding:0 12px;font-size:16px;background:var(--surface);-webkit-user-select:text;user-select:text}
+.srow input:focus{outline:none;border-color:var(--acc)}
+.btn{height:48px;padding:0 18px;border:1.5px solid var(--line);border-radius:12px;background:var(--chip);font-weight:600}
+.btn.primary{background:var(--acc);border-color:var(--acc);color:#fff}
+.srow .ib{width:48px;flex:none}
+ul.plans{list-style:none;margin:0;padding:0;overflow:auto;-webkit-overflow-scrolling:touch}
+ul.plans li{display:flex;gap:6px;align-items:center;min-height:56px;border-top:1px solid var(--line)}
+ul.plans .pn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.sm{height:44px;min-width:44px;padding:0 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);font-size:14px;font-weight:600}
+.sm.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+.sm.acc{color:var(--acc);border-color:var(--accsoft);background:var(--accsoft)}
+li input.rn{flex:1;min-width:0;height:44px;border:1.5px solid var(--acc);border-radius:10px;padding:0 10px;font-size:16px;-webkit-user-select:text;user-select:text}
+#toast{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));transform:translateX(-50%);background:var(--text);color:#fff;padding:8px 16px;border-radius:20px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:60}
+#toast.on{opacity:1}
 </style>
 </head>
 <body>
-<main>
-  <h1 id="vtitle"></h1>
-  <div class="vsub" id="vsub"></div>
-  <input id="title" class="edit" type="text" maxlength="60" aria-label="Plan name" placeholder="Plan name" autocomplete="off">
-
-  <div class="seg edit" id="layouts" role="group" aria-label="Table shape"></div>
-  <div class="maybes edit" id="maybes"></div>
-  <div id="status" class="edit"></div>
-  <p id="hint" class="edit"></p>
-
+<div id="app">
+  <header>
+    <div id="title"></div>
+    <button class="pillb" id="bEnds" aria-pressed="false" aria-label="End seats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="8" y="6" width="8" height="12" rx="2"/><circle cx="12" cy="2.6" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="21.4" r="1.6" fill="currentColor" stroke="none"/></svg>Ends</button>
+    <button class="ib" id="bSaved" aria-label="Saved plans"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4.5L5 21V4a1 1 0 0 1 1-1z"/></svg><span class="cnt" id="cnt"></span></button>
+  </header>
   <div id="stage"></div>
-  <div id="vNotSeated"></div>
-
-  <div id="trayWrap" class="edit">
-    <h2>Not seated <span id="trayN"></span></h2>
-    <div id="tray"></div>
-  </div>
-
-  <div class="acts edit">
-    <button class="btn primary" id="bSave">Save plan</button>
-    <button class="btn" id="bShare">Copy share link</button>
-    <button class="btn" id="bText">Copy as text</button>
-    <button class="btn" id="bView">Clean view</button>
-  </div>
-  <div class="acts vacts">
-    <button class="btn" id="bText2">Copy as text</button>
-    <button class="btn primary" id="bEdit">Back to editing</button>
-  </div>
-
-  <details class="edit" id="dPlans"><summary id="sPlans">Saved plans</summary>
-    <div><div class="empty-note" id="plansEmpty">Nothing saved yet. “Save plan” stores this plan under its name above.</div><ul class="plans" id="plans"></ul></div>
-  </details>
-  <details class="edit" id="dGuests"><summary id="sGuests">Guests</summary>
-    <div>
-      <div id="guests"></div>
-      <div class="row" style="margin-top:10px"><input type="text" id="newName" maxlength="40" placeholder="Add a guest" autocomplete="off"><button class="btn" id="bAdd">Add</button></div>
-    </div>
-  </details>
-</main>
+  <div id="trayWrap"><div id="tray" aria-label="Not seated"></div></div>
+</div>
+<div id="sheet"><div class="panel">
+  <div class="srow"><input id="pname" type="text" maxlength="60" placeholder="Plan name" autocomplete="off" aria-label="Plan name"><button class="btn primary" id="bSave">Save</button><button class="ib" id="bClose" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <ul class="plans" id="plans"></ul>
+</div></div>
 <div id="toast" role="status" aria-live="polite"></div>
-<div id="sheet"><div><div id="sheetMsg">Press and hold to select, then copy:</div><textarea id="sheetText" readonly></textarea><button class="btn" id="sheetClose">Close</button></div></div>
 
 <script>
 (()=>{
 'use strict';
-const MAX=14;
-const LAYOUTS={l:'Long table',e:'Long table + ends',t:'Two tables',r:'Round table'};
+const HOLE=-2;
 const $=s=>document.querySelector(s);
-const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const fine=matchMedia('(hover:hover) and (pointer:fine)').matches;
+const PERSON='<svg class="ti" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 5.5"><circle cx="24" cy="16" r="9"/><path d="M6 43c0-10 8-16 18-16s18 6 18 16"/></svg>';
 
-let S=blank(), selId=null, armedRm=null, view=false;
-let seq=0, fragSeq=-1, curFrag='', renaming=null, armedDel=null;
+let S=blank(), geo=null, dragging=null, busy=false, renaming=null, armedDel=null, seq=0;
+const stage=$('#stage'), tray=$('#tray'), cards=new Map(), slots=[[],[]], endSlots=[];
+let tblEl;
 
-function blank(){return {t:'Seating plan',L:'l',g:[],s:[],nid:0}}
-const byId=id=>S.g.find(x=>x.id===id);
-const isOn=g=>!(g.f&2);
-const act=()=>S.g.filter(isOn);
-const partnerOf=g=>g.c?S.g.find(x=>x!==g&&x.c===g.c):null;
+function blank(){return {t:'Seating plan',g:[],a:[],b:[],h:-1,f:-1,e:0,nid:0}}
+const cap=()=>S.e?6:7;                 // seats per long side; with end seats there are 2 + 12
 const nm=g=>g.n.trim()||'(unnamed)';
+const byId=id=>S.g.find(x=>x.id===id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 /* ---------- state <-> compact object ---------- */
-function serialize(){
-  return {v:1,t:S.t,L:S.L,g:S.g.map(x=>[x.n,x.c,x.f]),s:S.s.map(id=>id<0?-1:S.g.findIndex(x=>x.id===id))};
-}
+function serialize(){return {v:2,t:S.t,e:S.e,g:S.g.map(x=>[x.n,x.c]),a:S.a.slice(),b:S.b.slice(),h:S.h,f:S.f}}
 function sanitize(o){
-  if(!o||typeof o!=='object'||!Array.isArray(o.g)) throw new Error('bad plan');
+  if(!o||typeof o!=='object'||!Array.isArray(o.g)||o.v!==2)throw new Error('bad plan');
   const st=blank();
   st.t=String(o.t||'').slice(0,60)||'Seating plan';
-  st.L=LAYOUTS[o.L]?o.L:'l';
-  o.g.slice(0,40).forEach(r=>{
-    r=Array.isArray(r)?r:['',0,0];
-    st.g.push({id:st.nid++,n:String(r[0]==null?'':r[0]).slice(0,40),c:Math.max(0,Math.floor(+r[1]))||0,f:(+r[2]|0)&3});
-  });
-  const cnt={}; st.g.forEach(x=>{if(x.c)cnt[x.c]=(cnt[x.c]||0)+1});
+  st.e=o.e?1:0;
+  const c=st.e?6:7;
+  o.g.slice(0,40).forEach(r=>{r=Array.isArray(r)?r:[''];st.g.push({id:st.nid++,n:String(r[0]==null?'':r[0]).slice(0,40),c:Math.max(0,Math.floor(+r[1]))||0})});
+  const cnt={};st.g.forEach(x=>{if(x.c)cnt[x.c]=(cnt[x.c]||0)+1});
   st.g.forEach(x=>{if(x.c&&cnt[x.c]!==2)x.c=0});
-  const n=st.g.filter(isOn).length, used=new Set();
-  st.s=Array(n).fill(-1);
-  (Array.isArray(o.s)?o.s:[]).forEach((gi,i)=>{
-    if(i<n&&Number.isInteger(gi)&&st.g[gi]&&isOn(st.g[gi])&&!used.has(gi)){st.s[i]=gi;used.add(gi)}
-  });
+  const used=new Set(),ok=gi=>Number.isInteger(gi)&&st.g[gi]&&!used.has(gi);
+  ['a','b'].forEach(k=>(Array.isArray(o[k])?o[k]:[]).forEach(gi=>{if(ok(gi)&&st[k].length<c){st[k].push(gi);used.add(gi)}}));
+  if(st.e)['h','f'].forEach(k=>{if(ok(o[k])){st[k]=o[k];used.add(o[k])}});
   return st;
 }
 
@@ -193,320 +131,294 @@ async function enc(o){
 }
 async function dec(f){
   let u=unb64u(f.slice(1));
-  if(f[0]==='z')u=await pipe(u,DecompressionStream);
-  else if(f[0]!=='j')throw new Error('unknown format');
+  if(f[0]==='z')u=await pipe(u,DecompressionStream);else if(f[0]!=='j')throw new Error('unknown format');
   return JSON.parse(new TextDecoder().decode(u));
 }
 
-/* ---------- table geometry (design space 400 wide) ---------- */
-function build(L,N){
-  const seats=[],tables=[];let H=400;
-  const mk=o=>{o.adj=[];o.acr=[];seats.push(o)};
-  const lk=(a,b,k)=>{if(a>=0&&b>=0&&a<N&&b<N&&a!==b&&!seats[a][k].includes(b)){seats[a][k].push(b);seats[b][k].push(a)}};
-  if(L==='l'||L==='e'){
-    const ends=L==='e',off=ends?Math.min(2,N):0,rest=N-off,rows=Math.max(Math.ceil(rest/2),1),y0=ends?60:8;
-    const gi=(side,row)=>off+row*2+side;
-    if(off>=1)mk({x:135,y:8,w:130,h:46,kind:'head'});
-    if(off>=2)mk({x:135,y:y0+rows*52+6,w:130,h:46,kind:'foot'});
-    for(let g=off;g<N;g++){const r=g-off,side=r%2,row=r>>1;mk({x:side?260:10,y:y0+row*52+3,w:130,h:46,kind:'s',side,row})}
-    tables.push({x:150,y:y0,w:100,h:rows*52});
-    for(let g=off;g<N;g++){const s=seats[g];lk(g,gi(s.side,s.row+1),'adj');lk(g,gi(1-s.side,s.row),'acr')}
-    if(off>=1){lk(0,gi(0,0),'adj');lk(0,gi(1,0),'adj')}
-    if(off>=2){
-      if(rest>0)lk(1,gi(0,Math.ceil(rest/2)-1),'adj');
-      if(rest>1)lk(1,gi(1,Math.floor(rest/2)-1),'adj');
-      lk(0,1,'acr');
+/* ---------- geometry ----------
+   A seat is [side,i]: side 0 = left column, 1 = right column, i = row down the long side;
+   [2,0] is the head end seat, [3,0] the foot end seat (only when S.e). */
+function computeGeo(){
+  const r=stage.getBoundingClientRect(),W=r.width,H=r.height,c=cap(),rows=c+(S.e?2:0);
+  const rowH=Math.max(36,Math.min(74,(H-4)/rows)),ch=rowH-10,tw=Math.round(Math.min(64,Math.max(40,W*.14)));
+  const cw=(W-16-tw-16)/2;
+  geo={W,H,c,rows,rowH,ch,cw,tw,xL:8,xR:W-8-cw,xC:(W-cw)/2,y0:(H-rowH*rows)/2,left:r.left,top:r.top};
+}
+function slotXY(s,i){
+  const off=S.e?1:0;
+  if(s===2)return {x:geo.xC,y:geo.y0+(geo.rowH-geo.ch)/2};
+  if(s===3)return {x:geo.xC,y:geo.y0+(geo.c+1)*geo.rowH+(geo.rowH-geo.ch)/2};
+  return {x:s?geo.xR:geo.xL,y:geo.y0+(i+off)*geo.rowH+(geo.rowH-geo.ch)/2};
+}
+function put(el,s,i){const p=slotXY(s,i);el.style.width=geo.cw+'px';el.style.height=geo.ch+'px';el.style.transform=`translate3d(${p.x}px,${p.y}px,0)`}
+
+/* ---------- plans: where everyone lands when `id` is dropped at tgt ----------
+   Result {A,B,H,F}: left list, right list, head, foot (HOLE marks the dropped seat). */
+function plan(id,tgt){
+  const c=cap(),A=S.a.filter(x=>x!==id),B=S.b.filter(x=>x!==id);
+  const R={A,B,H:S.h===id?-1:S.h,F:S.f===id?-1:S.f};
+  if(tgt.tray)return R;
+  // somewhere for a guest who got pushed out: the other side, else a free end seat, else the tray
+  const place=(p,O)=>{if(O.length<c)O.push(p);else if(S.e&&R.F===-1)R.F=p;else if(S.e&&R.H===-1)R.H=p};
+  const spill=(L,O)=>{while(L.length>c){const p=L.pop();if(p!==HOLE)place(p,O)}};
+  if(tgt.end){
+    const key=tgt.end==='h'?'H':'F',prev=R[key];R[key]=HOLE;
+    if(prev>=0){                                   // the sitter slides onto the shorter side
+      const L=A.length<=B.length?A:B,O=L===A?B:A;
+      L.splice(key==='H'?0:L.length,0,prev);spill(L,O);
     }
-    H=off>=2?seats[1].y+54:y0+rows*52+8;
-  }else if(L==='t'){
-    const NT=[Math.ceil(N/2),Math.floor(N/2)],gi=(t,side,row)=>(row*2+side)*2+t;
-    for(let g=0;g<N;g++){const t=g%2,l=g>>1,side=l%2,row=l>>1;mk({x:(t?202:0)+(side?118:8),y:8+row*52+3,w:72,h:46,kind:'s',tbl:t,side,row})}
-    for(let g=0;g<N;g++){const s=seats[g];lk(g,gi(s.tbl,s.side,s.row+1),'adj');lk(g,gi(s.tbl,1-s.side,s.row),'acr')}
-    const rows=NT.map(n=>Math.max(Math.ceil(n/2),1));
-    [0,1].forEach(t=>tables.push({x:(t?202:0)+84,y:8,w:30,h:rows[t]*52,label:'Table '+(t+1),vert:true}));
-    H=8+Math.max(...rows)*52+8;
   }else{
-    const R=155;
-    for(let g=0;g<N;g++){const a=-Math.PI/2+g*2*Math.PI/N;mk({x:200+R*Math.cos(a)-33,y:200+R*Math.sin(a)-23,w:66,h:46,kind:'r',pos:g})}
-    const d=N>>1;
-    for(let g=0;g<N;g++){lk(g,(g+1)%N,'adj');if(d>1){lk(g,(g+d)%N,'acr');lk(g,(g-d+N)%N,'acr')}}
-    tables.push({x:105,y:105,w:190,h:190,round:true});
+    const L=tgt.s?B:A,O=tgt.s?A:B;
+    L.splice(Math.min(tgt.k,L.length),0,HOLE);spill(L,O);
   }
-  return {seats,tables,H,close:(a,b)=>seats[a].adj.includes(b)||seats[a].acr.includes(b)};
+  return R;
 }
+const fillHole=(R,id)=>({A:R.A.map(v=>v===HOLE?id:v),B:R.B.map(v=>v===HOLE?id:v),H:R.H===HOLE?id:R.H,F:R.F===HOLE?id:R.F});
+function posMap(R){
+  const pos=new Map();
+  R.A.forEach((id,i)=>{if(id>=0)pos.set(id,[0,i])});
+  R.B.forEach((id,i)=>{if(id>=0)pos.set(id,[1,i])});
+  if(S.e){if(R.H>=0)pos.set(R.H,[2,0]);if(R.F>=0)pos.set(R.F,[3,0])}
+  return pos;
+}
+const cur=()=>({A:S.a,B:S.b,H:S.h,F:S.f});
 
-/* ---------- seats follow the guest count ---------- */
-function fit(){
-  const ids=new Set(act().map(g=>g.id));
-  S.s=S.s.map(id=>ids.has(id)?id:-1);
-  while(S.s.length>ids.size){
-    let k=S.s.length-1;
-    for(let i=S.s.length-1;i>=0;i--)if(S.s[i]<0){k=i;break}
-    const last=S.s.pop();
-    if(k<S.s.length)S.s[k]=last;
-  }
-  const grown=[];
-  while(S.s.length<ids.size){S.s.push(-1);grown.push(S.s.length-1)}
-  const un=act().filter(g=>!S.s.includes(g.id));
-  grown.forEach(i=>{if(un.length)S.s[i]=un.shift().id});
+/* a couple is fine when seated next to each other on a side, in the same row on both sides,
+   or at an end with the first/last row beside it (or head and foot facing each other) */
+function close(p,q){
+  if(!p||!q)return false;
+  if(p[0]<2&&q[0]<2)return p[0]===q[0]?Math.abs(p[1]-q[1])===1:p[1]===q[1];
+  if(p[0]>=2&&q[0]>=2)return p[0]!==q[0];
+  const [e,sd]=p[0]>=2?[p,q]:[q,p];
+  return sd[1]===(e[0]===2?0:cap()-1);
 }
-
-function apart(G){
-  const set=new Set(),pairs=[],seen=new Set(),A=act();
-  A.forEach(a=>{
-    if(!a.c||seen.has(a.c))return;
-    const b=A.find(x=>x!==a&&x.c===a.c);if(!b)return;
-    seen.add(a.c);
-    const ia=S.s.indexOf(a.id),ib=S.s.indexOf(b.id);
-    if(!(ia>=0&&ib>=0&&G.close(ia,ib))){set.add(a.id);set.add(b.id);pairs.push([a,b])}
-  });
-  return {set,pairs};
-}
-
-/* ---------- actions ---------- */
-function swap(a,b){
-  const pa=S.s.indexOf(a),pb=S.s.indexOf(b);
-  if(pa<0&&pb<0){selId=b;return}
-  if(pa>=0){S.s[pa]=b;if(pb>=0)S.s[pb]=a}else S.s[pb]=a;
-}
-function tapGuest(id){
-  if(selId===null){selId=id;draw();return}
-  if(selId===id){selId=null;draw();return}
-  const a=selId;
-  swap(a,id);
-  if(selId===a)selId=null;
-  change();
-}
-function tapSeat(i){
-  const gid=S.s[i];
-  if(gid>=0)return tapGuest(gid);
-  if(selId===null)return;
-  const pa=S.s.indexOf(selId);
-  if(pa>=0)S.s[pa]=-1;
-  S.s[i]=selId;selId=null;change();
-}
-function tapTray(){
-  if(selId===null)return;
-  const pa=S.s.indexOf(selId);
-  if(pa>=0){S.s[pa]=-1;selId=null;change()}
+function apartIds(R){
+  const pos=posMap(R),out=new Set(),by={};
+  S.g.forEach(g=>{if(g.c)(by[g.c]=by[g.c]||[]).push(g.id)});
+  Object.values(by).forEach(([x,y])=>{if(!close(pos.get(x),pos.get(y))){out.add(x);out.add(y)}});
+  return out;
 }
 
 /* ---------- rendering ---------- */
-function draw(structural){
-  document.body.classList.toggle('view',view);
-  const N=S.s.length,G=build(S.L,N),ap=apart(G),A=act();
-  // header / controls
-  if($('#title')!==document.activeElement)$('#title').value=S.t;
-  $('#vtitle').textContent=S.t;
-  $('#vsub').textContent=LAYOUTS[S.L]+' · '+N+' seat'+(N===1?'':'s');
-  $('#layouts').innerHTML=Object.keys(LAYOUTS).map(k=>`<button data-l="${k}" aria-pressed="${S.L===k}">${esc(LAYOUTS[k])}</button>`).join('');
-  $('#maybes').innerHTML=S.g.filter(g=>g.f&1).map(g=>`<button class="pill ${isOn(g)?'in':'out'}" data-maybe="${g.id}" aria-pressed="${isOn(g)}">${esc(nm(g))} (maybe): ${isOn(g)?'coming':'not coming'}</button>`).join('');
-  let st=`<b>${A.length}</b> guest${A.length===1?'':'s'} · <b>${N}</b> seat${N===1?'':'s'}`;
-  if(A.length>MAX)st+=` · <span class="warn">over the ${MAX}-guest limit</span>`;
-  st+='<br>';
-  st+=ap.pairs.length?`<span class="bad">${ap.pairs.length} couple${ap.pairs.length===1?'':'s'} apart</span>: ${ap.pairs.map(p=>esc(nm(p[0]))+' &amp; '+esc(nm(p[1]))).join(', ')}`:(A.some(a=>partnerOf(a)&&isOn(partnerOf(a)))?'<span class="good">All couples sit together ✓</span>':'No couples marked');
-  $('#status').innerHTML=st;
-  const sel=selId!==null?byId(selId):null;
-  $('#hint').textContent=sel?`${nm(sel)} selected. Tap a seat or another guest${S.s.includes(sel.id)?' (or the tray to unseat)':''}.`:(N?'Tap a guest, then tap a seat or another guest.':'');
-  // stage
-  const el=$('#stage'),k=(el.clientWidth||400)/400;
-  el.className=sel?'armed':'';
-  el.style.height=Math.round(G.H*k)+'px';
-  let h='';
-  G.tables.forEach(t=>{h+=`<div class="tbl${t.round?' rd':''}${t.vert?' vert':''}" style="left:${t.x*k}px;top:${t.y*k}px;width:${t.w*k}px;height:${t.h*k}px;font-size:${12*k}px">${esc(t.label||'')}</div>`});
-  G.seats.forEach((s,i)=>{
-    const g=S.s[i]>=0?byId(S.s[i]):null,bad=g&&ap.set.has(g.id);
-    const fs=(s.w>=100?16:s.w>=70?14:13)*k;
-    h+=`<button class="seat${g?'':' empty'}${g&&g.id===selId?' sel':''}${bad?' apart':''}" data-seat="${i}"${g&&fine&&!view?` draggable="true" data-gid="${g.id}"`:''} style="left:${s.x*k}px;top:${s.y*k}px;width:${s.w*k}px;height:${s.h*k}px;font-size:${fs}px"${g?` aria-label="${esc(nm(g))}${bad?' (apart from partner)':''}"`:' aria-label="Empty seat"'}>`+
-       `<span class="n">${g?esc(nm(g)):'—'}</span>${bad?'<i class="b">!</i>':''}</button>`;
+function mkCard(g,chip){
+  const el=document.createElement('div');
+  el.className='card'+(chip?' chip':'');el.dataset.id=g.id;
+  el.innerHTML='<i class="grip"></i><span class="n"></span><i class="b">!</i>';
+  el.querySelector('.n').textContent=nm(g);
+  return el;
+}
+function mkSlot(){const e=document.createElement('div');e.className='slot';stage.appendChild(e);return e}
+function initStage(){
+  tblEl=document.createElement('div');tblEl.className='tbl';stage.appendChild(tblEl);
+  for(let s=0;s<2;s++)for(let i=0;i<7;i++)slots[s].push(mkSlot());
+  endSlots.push(mkSlot(),mkSlot());
+}
+function layoutSlots(R){
+  const set=(e,s,i,v,show)=>{
+    const p=slotXY(s,i);
+    e.style.width=geo.cw+'px';e.style.height=geo.ch+'px';e.style.transform=`translate3d(${p.x}px,${p.y}px,0)`;
+    e.className='slot'+(!show?'':v===HOLE?' gap':(v===undefined||v===-1)?' empty':'');
+  };
+  [R.A,R.B].forEach((arr,s)=>{for(let i=0;i<7;i++)set(slots[s][i],s,i,arr[i],i<geo.c)});
+  set(endSlots[0],2,0,R.H,S.e);set(endSlots[1],3,0,R.F,S.e);
+}
+function layoutTable(){
+  tblEl.style.left=(geo.xL+geo.cw+8)+'px';tblEl.style.width=geo.tw+'px';
+  tblEl.style.top=(geo.y0+(S.e?geo.rowH:0))+'px';tblEl.style.height=geo.rowH*geo.c+'px';
+}
+function markApart(R){
+  const set=apartIds(R);
+  document.querySelectorAll('.card:not(.ghost)').forEach(el=>el.classList.toggle('apart',set.has(+el.dataset.id)));
+}
+const resetCards=()=>{cards.forEach(el=>el.remove());cards.clear()};   // a replaced guest list reuses ids, so never keep old cards
+function draw(){
+  if(dragging)return;
+  computeGeo();layoutTable();
+  const pos=posMap(cur());
+  cards.forEach((el,id)=>{if(!pos.has(id)){el.remove();cards.delete(id)}});
+  pos.forEach((p,id)=>{
+    let el=cards.get(id);
+    if(!el){el=mkCard(byId(id));cards.set(id,el);stage.appendChild(el)}
+    el.classList.remove('gone','src');put(el,p[0],p[1]);
   });
-  if(!N)h+='<div class="none">No guests yet.<br>Open “Guests” below to add some.</div>';
-  el.innerHTML=h;
-  // tray
-  const tray=A.filter(g=>!S.s.includes(g.id));
-  $('#trayN').textContent=tray.length?`(${tray.length})`:'';
-  $('#tray').className=sel&&S.s.includes(sel.id)?'armed':'';
-  $('#tray').innerHTML=tray.length?tray.map(g=>`<button class="chip${g.id===selId?' sel':''}${ap.set.has(g.id)?' apart':''}" data-chip="${g.id}"${fine?` draggable="true" data-gid="${g.id}"`:''}>${esc(nm(g))}${ap.set.has(g.id)?'<i class="b">!</i>':''}</button>`).join(''):'<span class="note">Everyone is seated.</span>';
-  $('#vNotSeated').textContent=tray.length?'Not seated: '+tray.map(nm).join(', '):'';
-  $('#sGuests').firstChild.textContent=`Guests (${A.length}${A.length!==S.g.length?` of ${S.g.length}`:''})`;
-  renderPlans();
-  if(structural)renderGuests();
+  layoutSlots(cur());
+  const un=S.g.filter(g=>!pos.has(g.id));
+  tray.className=un.length?'':'empty';
+  tray.replaceChildren();
+  tray.insertAdjacentHTML('afterbegin',PERSON);
+  un.forEach(g=>tray.appendChild(mkCard(g,true)));
+  markApart(cur());
+  $('#bEnds').setAttribute('aria-pressed',S.e?'true':'false');
+  $('#title').textContent=S.t;
+  const n=plans().length;$('#cnt').textContent=n?String(n):'';
 }
-function plans(){try{const p=JSON.parse(localStorage.getItem('seat.plans'));return Array.isArray(p)?p:[]}catch(e){return []}}
-function savePlans(p){try{localStorage.setItem('seat.plans',JSON.stringify(p))}catch(e){toast('Could not save: storage is full or blocked')}}
-function renderPlans(){
-  const p=plans();
-  $('#sPlans').firstChild.textContent=`Saved plans${p.length?` (${p.length})`:''}`;
-  $('#plansEmpty').style.display=p.length?'none':'';
-  $('#plans').innerHTML=p.map(x=>{
-    const name=renaming===x.id?`<input type="text" class="rn" maxlength="60" value="${esc(x.name)}" data-rn="${x.id}" style="flex:1;min-width:0">`:`<span class="pn">${esc(x.name)}</span>`;
-    const btns=renaming===x.id?`<button class="sm" data-pl="ok" data-id="${x.id}">OK</button>`:
-      `<button class="sm" data-pl="load" data-id="${x.id}">Load</button><button class="sm" data-pl="ren" data-id="${x.id}">Rename</button><button class="sm${armedDel===x.id?' danger':''}" data-pl="del" data-id="${x.id}">${armedDel===x.id?'Delete?':'Delete'}</button>`;
-    return `<li>${name}${btns}</li>`;
-  }).join('');
+
+/* ---------- end seats on/off: same people in the same order, reflowed ---------- */
+function setEnds(on){
+  if(dragging||busy||!!S.e===on)return;
+  const order=[];
+  if(S.h>=0)order.push(S.h);
+  for(let i=0;i<Math.max(S.a.length,S.b.length);i++){if(S.a[i]!==undefined)order.push(S.a[i]);if(S.b[i]!==undefined)order.push(S.b[i])}
+  if(S.f>=0)order.push(S.f);
+  S.e=on?1:0;S.h=S.f=-1;S.a=[];S.b=[];
+  let rest=order;
+  if(on){if(order.length>0)S.h=order[0];if(order.length>1)S.f=order[order.length-1];rest=order.slice(1,Math.max(1,order.length-1))}
+  rest.forEach((id,i)=>(i%2?S.b:S.a).push(id));
+  stage.classList.add('live');persist();draw();
+  setTimeout(()=>{if(!dragging)stage.classList.remove('live')},260);
 }
-function renderGuests(){
-  $('#guests').innerHTML=S.g.length?S.g.map(g=>{
-    const p=partnerOf(g);
-    return `<div class="guest" data-g="${g.id}"><div class="row"><input type="text" class="gn" maxlength="40" value="${esc(g.n)}" aria-label="Name">`+
-      `<button class="sm${armedRm===g.id?' danger':''}" data-rm="${g.id}" aria-label="Remove ${esc(nm(g))}">${armedRm===g.id?'Remove?':'Remove'}</button></div>`+
-      `<div class="opts"><label style="flex:1;display:flex;gap:6px;align-items:center;min-width:0">Partner <select class="gp"><option value="">none</option>${S.g.filter(x=>x!==g).map(x=>`<option value="${x.id}" data-nm="${x.id}"${p&&p.id===x.id?' selected':''}>${esc(nm(x))}</option>`).join('')}</select></label>`+
-      `<label class="mb"><input type="checkbox" class="gm"${g.f&1?' checked':''}> maybe</label></div></div>`;
-  }).join(''):'<div class="empty-note">No guests yet.</div>';
+$('#bEnds').addEventListener('click',()=>setEnds(!S.e));
+
+/* ---------- drag with pointer events ---------- */
+let pend=null;
+function onDown(e){
+  if(busy||dragging||pend||$('#sheet').classList.contains('on'))return;
+  if(e.pointerType==='mouse'&&e.button!==0)return;
+  const el=e.target.closest&&e.target.closest('.card');if(!el||el.classList.contains('ghost'))return;
+  const r=el.getBoundingClientRect();
+  pend={id:+el.dataset.id,el,pid:e.pointerId,x0:e.clientX,y0:e.clientY,offX:e.clientX-r.left,offY:e.clientY-r.top,w:r.width,h:r.height};
+  try{el.setPointerCapture(e.pointerId)}catch(err){}
 }
+function startDrag(){
+  const p=pend;pend=null;
+  const g=p.el.cloneNode(true);g.classList.add('ghost');g.classList.remove('apart','src');
+  g.style.width=p.w+'px';g.style.height=p.h+'px';
+  document.body.appendChild(g);
+  dragging={id:p.id,el:p.el,ghost:g,pid:p.pid,offX:p.offX,offY:p.offY,w:p.w,h:p.h,px:p.x0,py:p.y0,tgt:null,key:''};
+  p.el.classList.add('src');
+  stage.classList.add('live');
+  setGhost(dragging,1.06);
+  update();
+}
+function setGhost(d,scale){d.ghost.style.transform=`translate3d(${d.px-d.offX}px,${d.py-d.offY}px,0) scale(${scale})`}
+function targetAt(d){
+  const cx=d.px-d.offX+d.w/2,cy=d.py-d.offY+d.h/2;
+  const tr=$('#trayWrap').getBoundingClientRect();
+  if(cy>tr.top-6)return {tray:true};
+  const x=Math.min(Math.max(cx-geo.left,0),geo.W),y=cy-geo.top;
+  const r=Math.min(geo.rows-1,Math.max(0,Math.floor((y-geo.y0)/geo.rowH)));
+  if(S.e&&r===0)return {end:'h'};
+  if(S.e&&r===geo.rows-1)return {end:'f'};
+  const s=x<geo.W/2?0:1,n=(s?S.b:S.a).filter(v=>v!==d.id).length;
+  return {s,k:Math.min(r-(S.e?1:0),n)};
+}
+function update(){
+  const d=dragging;if(!d)return;
+  const t=targetAt(d),key=t.tray?'t':t.end?t.end:t.s+':'+t.k;
+  tray.classList.toggle('over',!!t.tray);
+  if(key===d.key)return;
+  d.key=key;d.tgt=t;
+  const pv=plan(d.id,t),pos=posMap(pv);
+  cards.forEach((el,id)=>{
+    const p=pos.get(id);
+    if(id===d.id||!p)el.classList.add('gone');else{el.classList.remove('gone');put(el,p[0],p[1])}
+  });
+  layoutSlots(pv);
+  markApart(fillHole(pv,d.id));
+}
+function onMove(e){
+  if(pend&&e.pointerId===pend.pid){
+    if(Math.hypot(e.clientX-pend.x0,e.clientY-pend.y0)<6)return;
+    startDrag();
+  }
+  const d=dragging;if(!d||e.pointerId!==d.pid)return;
+  d.px=e.clientX;d.py=e.clientY;setGhost(d,1.06);update();
+}
+function onUp(e){
+  if(pend&&e.pointerId===pend.pid){pend=null;return}
+  const d=dragging;if(!d||e.pointerId!==d.pid)return;
+  d.px=e.clientX;d.py=e.clientY;
+  if(e.type==='pointercancel'){finish(d,null);return}
+  d.key='';update();            // settle the preview on the final position
+  finish(d,d.tgt);
+}
+function finish(d,t){
+  busy=true;
+  const done=()=>{
+    d.ghost.remove();dragging=null;busy=false;
+    stage.classList.remove('live');tray.classList.remove('over');
+    if(t){
+      const f=fillHole(plan(d.id,t),d.id);
+      S.a=f.A;S.b=f.B;S.h=f.H;S.f=f.F;
+      persist();
+    }
+    draw();
+  };
+  if(t&&!t.tray){
+    const pv=plan(d.id,t),p=slotXY(...posMap(fillHole(pv,d.id)).get(d.id));
+    d.ghost.classList.add('fly');
+    d.ghost.style.width=geo.cw+'px';d.ghost.style.height=geo.ch+'px';
+    d.ghost.style.transform=`translate3d(${geo.left+p.x}px,${geo.top+p.y}px,0) scale(1)`;
+    setTimeout(done,140);
+  }else if(t){d.ghost.classList.add('fly');d.ghost.style.opacity='0';setTimeout(done,110)}
+  else done();
+}
+document.addEventListener('pointerdown',onDown);
+document.addEventListener('pointermove',onMove);
+document.addEventListener('pointerup',onUp);
+document.addEventListener('pointercancel',onUp);
+document.addEventListener('contextmenu',e=>e.preventDefault());
+// no page scroll, rubber-band or pull-to-refresh; only the saved-plans list may scroll
+document.addEventListener('touchmove',e=>{if(!e.target.closest||!e.target.closest('#plans'))e.preventDefault()},{passive:false});
+document.addEventListener('gesturestart',e=>e.preventDefault());
 
 /* ---------- persistence ---------- */
-function change(structural){
-  draw(structural);persist();
-}
 function persist(){
   const o=serialize();
-  try{localStorage.setItem('seat.cur',JSON.stringify(o))}catch(e){}
+  try{localStorage.setItem('seat2.cur',JSON.stringify(o))}catch(e){}
   const my=++seq;
-  enc(o).then(f=>{if(my===seq){curFrag=f;fragSeq=my;history.replaceState(null,'','#'+f)}}).catch(()=>{});
+  enc(o).then(f=>{if(my===seq)history.replaceState(null,'','#'+f)}).catch(()=>{});
 }
-function setState(st){S=st;selId=null;armedRm=null;renaming=null;armedDel=null}
-
-/* ---------- clipboard / toast ---------- */
+function plans(){try{const p=JSON.parse(localStorage.getItem('seat2.plans'));return Array.isArray(p)?p:[]}catch(e){return []}}
+function savePlans(p){try{localStorage.setItem('seat2.plans',JSON.stringify(p))}catch(e){toast('Could not save')}}
 let tt;
-function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2000)}
-function showSheet(text,msg){$('#sheetMsg').textContent=msg||'Press and hold to select, then copy:';$('#sheetText').value=text;$('#sheet').classList.add('on');$('#sheetText').focus();$('#sheetText').select()}
-async function copy(text,msg){
-  try{await navigator.clipboard.writeText(text);toast(msg);return}catch(e){}
-  const ta=document.createElement('textarea');
-  ta.value=text;ta.setAttribute('readonly','');ta.style.cssText='position:fixed;top:0;left:0;opacity:0';
-  document.body.appendChild(ta);ta.focus();ta.select();ta.setSelectionRange(0,text.length);
-  let ok=false;try{ok=document.execCommand('copy')}catch(e){}
-  ta.remove();
-  if(ok)toast(msg);else showSheet(text);
-}
-function planText(){
-  const N=S.s.length,G=build(S.L,N);
-  const who=i=>S.s[i]>=0?nm(byId(S.s[i])):'(empty)';
-  const list=(pred)=>G.seats.map((s,i)=>[s,i]).filter(([s])=>pred(s)).sort((a,b)=>a[0].row-b[0].row).map(([s,i])=>`  ${s.row+1}. ${who(i)}`);
-  const out=[S.t||'Seating plan',LAYOUTS[S.L]+' · '+N+' seats',''];
-  if(S.L==='l'||S.L==='e'){
-    if(S.L==='e'&&N>=1)out.push('Head end (top of chart): '+who(0),'');
-    out.push('Left side, top to bottom:',...list(s=>s.kind==='s'&&s.side===0),'','Right side, top to bottom:',...list(s=>s.kind==='s'&&s.side===1));
-    if(S.L==='e'&&N>=2)out.push('','Foot end (bottom of chart): '+who(1));
-    out.push('','Seats with the same number face each other.');
-  }else if(S.L==='t'){
-    [0,1].forEach(t=>out.push(`Table ${t+1}`,' Left side, top to bottom:',...list(s=>s.tbl===t&&s.side===0).map(x=>' '+x),' Right side, top to bottom:',...list(s=>s.tbl===t&&s.side===1).map(x=>' '+x),''));
-    out.push('Seats with the same number on one table face each other.');
-  }else{
-    out.push('Seats clockwise, starting at the top:',...G.seats.map((s,i)=>`  ${i+1}. ${who(i)}`));
-  }
-  const tray=act().filter(g=>!S.s.includes(g.id));
-  if(tray.length)out.push('','Not seated: '+tray.map(nm).join(', '));
-  return out.join('\n');
-}
-async function shareLink(){
-  const f=fragSeq===seq?curFrag:await enc(serialize());
-  return location.href.split('#')[0]+'#'+f;
-}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),1600)}
 
-/* ---------- events ---------- */
-$('#layouts').addEventListener('click',e=>{const b=e.target.closest('[data-l]');if(b){S.L=b.dataset.l;change()}});
-$('#maybes').addEventListener('click',e=>{
-  const b=e.target.closest('[data-maybe]');if(!b)return;
-  const g=byId(+b.dataset.maybe);g.f^=2;selId=null;fit();change(true);
-});
-$('#stage').addEventListener('click',e=>{const b=e.target.closest('[data-seat]');if(b&&!view)tapSeat(+b.dataset.seat)});
-$('#tray').addEventListener('click',e=>{const b=e.target.closest('[data-chip]');if(b)tapGuest(+b.dataset.chip);else tapTray()});
-$('#title').addEventListener('input',e=>{S.t=e.target.value;$('#vtitle').textContent=S.t||'Seating plan';persist()});
-$('#bView').addEventListener('click',()=>{view=true;selId=null;draw();scrollTo(0,0)});
-$('#bEdit').addEventListener('click',()=>{view=false;draw()});
-const doText=()=>copy(planText(),'Copied seat list');
-$('#bText').addEventListener('click',doText);$('#bText2').addEventListener('click',doText);
-$('#bShare').addEventListener('click',async()=>{
-  const u=await shareLink();
-  try{await navigator.clipboard.writeText(u);toast('Link copied');return}catch(e){}
-  copy(u,'Link copied');
-});
-$('#sheetClose').addEventListener('click',()=>$('#sheet').classList.remove('on'));
+/* ---------- saved plans sheet ---------- */
+function renderPlans(){
+  $('#plans').innerHTML=plans().map(x=>{
+    const name=renaming===x.id?`<input type="text" class="rn" maxlength="60" value="${esc(x.name)}" aria-label="New name">`:`<span class="pn">${esc(x.name)}</span>`;
+    const btns=renaming===x.id?`<button class="sm acc" data-pl="ok" data-id="${x.id}">OK</button>`:
+      `<button class="sm acc" data-pl="load" data-id="${x.id}">Load</button><button class="sm" data-pl="ren" data-id="${x.id}">Rename</button><button class="sm${armedDel===x.id?' danger':''}" data-pl="del" data-id="${x.id}">${armedDel===x.id?'Delete?':'Delete'}</button>`;
+    return `<li>${name}${btns}</li>`;
+  }).join('');
+  const n=plans().length;$('#cnt').textContent=n?String(n):'';
+}
+function openSheet(){$('#pname').value=S.t;renaming=null;armedDel=null;renderPlans();$('#sheet').classList.add('on')}
+function closeSheet(){$('#sheet').classList.remove('on')}
+$('#bSaved').addEventListener('click',openSheet);
+$('#bClose').addEventListener('click',closeSheet);
+$('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet')closeSheet()});
+$('#pname').addEventListener('input',e=>{S.t=e.target.value;$('#title').textContent=S.t||'Seating plan';persist()});
 $('#bSave').addEventListener('click',()=>{
-  const name=(S.t||'').trim()||'Seating plan',p=plans(),o=serialize();
+  const name=($('#pname').value||'').trim()||'Seating plan',p=plans(),o=serialize();
+  S.t=name;o.t=name;
   const i=p.findIndex(x=>x.name.toLowerCase()===name.toLowerCase());
   if(i>=0){p[i].st=o;p[i].name=name}else p.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name,st:o});
-  savePlans(p);renderPlans();toast(i>=0?`Updated “${name}”`:`Saved “${name}”`);
+  savePlans(p);renderPlans();draw();persist();toast('Saved ✓');
 });
 $('#plans').addEventListener('click',e=>{
   const b=e.target.closest('[data-pl]');if(!b)return;
-  const p=plans(),x=p.find(q=>q.id===b.dataset.id),a=b.dataset.pl;
-  if(!x)return;
-  if(a==='load'){try{const st=sanitize(x.st);st.t=x.name;setState(st);change(true);toast(`Loaded “${x.name}”`)}catch(err){toast('That saved plan is unreadable')}return}
+  const p=plans(),x=p.find(q=>q.id===b.dataset.id),a=b.dataset.pl;if(!x)return;
+  if(a==='load'){try{const st=sanitize(x.st);st.t=x.name;S=st;resetCards();closeSheet();draw();persist();toast('Loaded ✓')}catch(err){toast('Unreadable plan')}return}
   if(a==='ren'){renaming=x.id;armedDel=null;renderPlans();const i=$('.rn');if(i){i.focus();i.select()}return}
-  if(a==='ok'){const i=$('.rn');const v=i&&i.value.trim();if(v){x.name=v;savePlans(p)}renaming=null;renderPlans();return}
-  if(a==='del'){
-    if(armedDel===x.id){savePlans(p.filter(q=>q.id!==x.id));armedDel=null}else armedDel=x.id;
-    renderPlans();
-  }
+  if(a==='ok'){const i=$('.rn'),v=i&&i.value.trim();if(v){x.name=v;savePlans(p)}renaming=null;renderPlans();return}
+  if(a==='del'){if(armedDel===x.id){savePlans(p.filter(q=>q.id!==x.id));armedDel=null}else armedDel=x.id;renderPlans();draw()}
 });
 $('#plans').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList.contains('rn')){const b=$('[data-pl=ok]');if(b)b.click()}});
-document.addEventListener('click',e=>{
-  if(armedDel&&!e.target.closest('#plans')){armedDel=null;renderPlans()}
-  if(armedRm!==null&&!e.target.closest('[data-rm]')){armedRm=null;renderGuests()}
-});
-// guest editor
-function addGuest(){
-  const i=$('#newName'),n=i.value.trim();if(!n)return;
-  S.g.push({id:S.nid++,n,c:0,f:0});i.value='';fit();change(true);i.focus();
-}
-$('#bAdd').addEventListener('click',addGuest);
-$('#newName').addEventListener('keydown',e=>{if(e.key==='Enter')addGuest()});
-$('#guests').addEventListener('input',e=>{
-  if(!e.target.classList.contains('gn'))return;
-  const g=byId(+e.target.closest('[data-g]').dataset.g);g.n=e.target.value;
-  document.querySelectorAll(`#guests option[data-nm="${g.id}"]`).forEach(o=>o.textContent=nm(g));
-  draw();persist();
-});
-$('#guests').addEventListener('change',e=>{
-  const row=e.target.closest('[data-g]');if(!row)return;
-  const g=byId(+row.dataset.g);
-  if(e.target.classList.contains('gm')){
-    if(e.target.checked)g.f|=1;else{g.f&=~1;if(!isOn(g)){g.f&=~2;fit()}}
-    change(true);
-  }else if(e.target.classList.contains('gp')){
-    const old=partnerOf(g);if(old)old.c=0;
-    const b=e.target.value===''?null:byId(+e.target.value);
-    if(b){const ob=partnerOf(b);if(ob)ob.c=0;g.c=b.c=Math.max(0,...S.g.map(x=>x.c))+1}else g.c=0;
-    change(true);
-  }
-});
-$('#guests').addEventListener('click',e=>{
-  const b=e.target.closest('[data-rm]');if(!b)return;
-  e.stopPropagation();
-  const id=+b.dataset.rm;
-  if(armedRm!==id){armedRm=id;renderGuests();return}
-  const p=partnerOf(byId(id));if(p)p.c=0;
-  S.g=S.g.filter(x=>x.id!==id);armedRm=null;if(selId===id)selId=null;fit();change(true);
-});
-// drag and drop (mouse devices only; touch uses tap)
-let dragId=null;
-document.addEventListener('dragstart',e=>{
-  const el=e.target.closest&&e.target.closest('[data-gid]');if(!el)return;
-  dragId=+el.dataset.gid;e.dataTransfer.setData('text/plain',String(dragId));e.dataTransfer.effectAllowed='move';
-});
-document.addEventListener('dragover',e=>{if(dragId!==null&&e.target.closest('.seat,.chip,#tray'))e.preventDefault()});
-document.addEventListener('drop',e=>{
-  if(dragId===null)return;e.preventDefault();
-  selId=dragId;dragId=null;
-  const s=e.target.closest('.seat'),c=e.target.closest('.chip');
-  if(s)tapSeat(+s.dataset.seat);else if(c)tapGuest(+c.dataset.chip);else tapTray();
-});
-document.addEventListener('dragend',()=>{dragId=null});
-let rz;addEventListener('resize',()=>{cancelAnimationFrame(rz);rz=requestAnimationFrame(()=>draw())});
-addEventListener('hashchange',()=>load(false));
+$('#pname').addEventListener('keydown',e=>{if(e.key==='Enter')$('#bSave').click()});
 
 /* ---------- start ---------- */
 async function load(first){
   let st=null;const h=location.hash.slice(1);
-  if(h){try{st=sanitize(await dec(h))}catch(e){toast('Could not read that link')}}
-  if(!st&&first){try{st=sanitize(JSON.parse(localStorage.getItem('seat.cur')))}catch(e){}}
+  if(h){try{st=sanitize(await dec(h))}catch(e){toast('Could not read link')}}
+  if(!st&&first){try{st=sanitize(JSON.parse(localStorage.getItem('seat2.cur')))}catch(e){}}
   if(!st){if(!first)return;st=blank()}
-  setState(st);draw(true);persist();
-  if(!st.g.length)$('#dGuests').open=true;
+  S=st;resetCards();renaming=null;armedDel=null;draw();persist();
 }
+initStage();
+new ResizeObserver(()=>draw()).observe(stage);
+addEventListener('hashchange',()=>load(false));
 load(true);
 })();
 </script>
